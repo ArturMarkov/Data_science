@@ -1,11 +1,11 @@
 
-#import sys
- #sys.setdefaultencoding("utf-8")
+# import sys
+# sys.setdefaultencoding("utf-8")
 
 import os
 
-#import seaborn as sns
-#import matplotlib.pyplot as plt
+import seaborn as sns
+# import matplotlib.pyplot as plt
 import pandas as pd
 from spyre import server
 
@@ -103,29 +103,44 @@ class SimpleApp(server.App):
 
         year = params['year']
         pr = params['province']
-        #D:\python_data_science\lab2\data\province-1.csv
-        path = os.path.normpath(f"data/province-{pr}.csv")
-        #min_week = params['min_week']
-        #max_week = params['max_week']
+        # lab2\data\province-1.csv
+        # D:\python_data_science\lab2\data\province-1.csv
+        path = os.path.normpath(f"lab2/data/province-{pr}.csv")
+        min_week = params['min_week']
+        max_week = params['max_week']
         df = pd.read_csv(path, header=0)
-        
-        #df = pd.read_csv(path, sep='[, ]+', engine='python')
+
+        # df = pd.read_csv(path, sep='[, ]+', engine='python')
         # = df[df.Year == year]
-        #если не int() то FutureWarning: elementwise comparison failed; 
-        # returning scalar, 
+        # если не int() то FutureWarning: elementwise comparison failed;
+        # returning scalar,
         # but in the future will perform elementwise comparison
-        
-        df["Year"]= df["Year"].astype(str)
+
+        df["Year"] = df["Year"].astype(str)
+        # df["Week"] = df["week"].astype(int)
         p = df[df["Year"] == year]
-        print(p)
+
+        result = p[(p.Week >= min_week) & (p.Week <= max_week)]
+        print(result)
 
         print(type(year))
-
-        return p
+        result.Year = result.Year.astype(int)
+        return result
 
     def getPlot(self, params):
         df = self.getData(params)
-        return df.set_index(df['Week']).plot()
+        option = params['choose_by']
+        print(option)
+        # df[option] = df[option].astype(str)
+        print(type(option))
+        #result = df[f"{option}"]
+        # result[f"{option}"]=result[f"{option}"].astype(str)
+        #t = df.set_index(df['Week'])[f"{option}"]
+        #t.option = t.option.astype(str)
+        #data = self.getData(params)
+        return sns.lineplot(x='Week', y=params['choose_by'], data=df).get_figure()
+
+    
 
 
 app = SimpleApp()
