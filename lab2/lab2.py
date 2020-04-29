@@ -5,6 +5,7 @@
 import os
 
 import seaborn as sns
+sns.set(style="whitegrid")
 # import matplotlib.pyplot as plt
 import pandas as pd
 from spyre import server
@@ -95,7 +96,7 @@ class SimpleApp(server.App):
         {'type': 'plot',
             'id': 'another',
             'control_id': "button2",
-            'tab': 'another'
+            'tab': 'Another'
 
 
          }
@@ -136,7 +137,29 @@ class SimpleApp(server.App):
         result.Year = result.Year.astype(int)
         return result
 
-    def getPlot(self, params):
+    def data(self,params, year):
+        
+        pr = params['province']
+        # lab2\data\province-1.csv
+        # D:\python_data_science\lab2\data\province-1.csv
+        path = os.path.normpath(f"lab2/data/province-{pr}.csv")
+        min_week = params['min_week']
+        max_week = params['max_week']
+        df = pd.read_csv(path, header=0)
+
+
+        df["Year"] = df["Year"].astype(str)
+        # df["Week"] = df["week"].astype(int)
+        p = df[df["Year"] == year]
+
+        result = p[(p.Week >= min_week) & (p.Week <= max_week)]
+        #print(result)
+
+        print(type(year))
+        result.Year = result.Year.astype(int)
+        return result
+
+    def plot1(self, params):
         df = self.getData(params)
         option = params['choose_by']
         #print(option)
@@ -157,16 +180,23 @@ class SimpleApp(server.App):
         #data = self.getData(params)
         
     def another(self,params):
-        params['year']='1995'
-        df = self.getData(params)
+      
+        df = self.data(params,"1995")
         t = df.set_index("Week")
-        re = t["VHI"].rename(columns = {"VHI":"1995"})
-        params['year'] = '2015'
-        df1 = self.getData(params)
+        #re = t["VHI"]
+        re = t.loc[:, ("VHI")]
+        #rankings_pd.columns = ['TEST', 'ODI', 'T-20']
+        #print(an)
+        #.rename(columns = {'test':'TEST', 'odi':'ODI','t20': 'T20'}, inplace = True)
+        
+        df1 = self.data(params,'2015')
         t1 = df1.set_index("Week")
-        re1 = t1["VHI"].rename(columns={"VHI": "2015"})
+        re1 = t1.loc[:, ("VHI")]  # .rename(columns={"VHI": "2015"})
         result = pd.concat([re, re1], axis=1, sort=False)
         print(result)
+        #another_result = pd.DataFrame(
+           # columns=['week', 'vhi_1995', 'vhi_2015'])
+            #another_result.append('week':)
         return sns.lineplot(data=result).get_figure()
     
 
