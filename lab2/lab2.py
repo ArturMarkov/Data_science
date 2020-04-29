@@ -133,12 +133,16 @@ class SimpleApp(server.App):
         print(option)
         # df[option] = df[option].astype(str)
         print(type(option))
+        if str(option) == 'all':
+            return df.set_index(df['Week']).plot()
+        else:
+            return sns.lineplot(x='Week', y=params['choose_by'], data=df).get_figure()
         #result = df[f"{option}"]
         # result[f"{option}"]=result[f"{option}"].astype(str)
         #t = df.set_index(df['Week'])[f"{option}"]
         #t.option = t.option.astype(str)
         #data = self.getData(params)
-        return sns.lineplot(x='Week', y=params['choose_by'], data=df).get_figure()
+        
 
     
 
