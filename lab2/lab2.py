@@ -91,13 +91,27 @@ class SimpleApp(server.App):
             'id': 'plot1',
             'control_id': "button1",
             'tab': 'Plot'
-         }]
+         },
+        {'type': 'plot',
+            'id': 'another',
+            'control_id': "button2",
+            'tab': 'another'
+
+
+         }
+         ]
 
     controls = [{"type": "button",
                  "label": "show data",
-                 "id": "button1"}]
+                 "id": "button1"},
 
-    tabs = ['Table', 'Plot']
+                {"type": "button",
+                 "label": "stupid button",
+                 "id": "button2"
+
+                 }]
+
+    tabs = ['Table', 'Plot','Another']
 
     def getData(self, params):
 
@@ -110,18 +124,13 @@ class SimpleApp(server.App):
         max_week = params['max_week']
         df = pd.read_csv(path, header=0)
 
-        # df = pd.read_csv(path, sep='[, ]+', engine='python')
-        # = df[df.Year == year]
-        # если не int() то FutureWarning: elementwise comparison failed;
-        # returning scalar,
-        # but in the future will perform elementwise comparison
 
         df["Year"] = df["Year"].astype(str)
         # df["Week"] = df["week"].astype(int)
         p = df[df["Year"] == year]
 
         result = p[(p.Week >= min_week) & (p.Week <= max_week)]
-        print(result)
+        #print(result)
 
         print(type(year))
         result.Year = result.Year.astype(int)
@@ -130,12 +139,16 @@ class SimpleApp(server.App):
     def getPlot(self, params):
         df = self.getData(params)
         option = params['choose_by']
-        print(option)
+        #print(option)
         # df[option] = df[option].astype(str)
-        print(type(option))
+        #print(type(option))
         if str(option) == 'all':
-            return df.set_index(df['Week']).plot()
+            t = df.set_index("Week")
+            #re = t[["VHI", "TCI", "VCI"]]
+            re=t.loc[:, ("VHI", "TCI", "VCI")]
+            return sns.lineplot(data=re).get_figure()
         else:
+            
             return sns.lineplot(x='Week', y=params['choose_by'], data=df).get_figure()
         #result = df[f"{option}"]
         # result[f"{option}"]=result[f"{option}"].astype(str)
@@ -143,7 +156,18 @@ class SimpleApp(server.App):
         #t.option = t.option.astype(str)
         #data = self.getData(params)
         
-
+    def another(self,params):
+        params['year']='1995'
+        df = self.getData(params)
+        t = df.set_index("Week")
+        re = t["VHI"].rename(columns = {"VHI":"1995"})
+        params['year'] = '2015'
+        df1 = self.getData(params)
+        t1 = df1.set_index("Week")
+        re1 = t1["VHI"].rename(columns={"VHI": "2015"})
+        result = pd.concat([re, re1], axis=1, sort=False)
+        print(result)
+        return sns.lineplot(data=result).get_figure()
     
 
 
