@@ -1,12 +1,10 @@
 
-# import sys
-# sys.setdefaultencoding("utf-8")
 
 import os
 
 import seaborn as sns
 sns.set(style="whitegrid")
-# import matplotlib.pyplot as plt
+
 import pandas as pd
 from spyre import server
 
@@ -107,7 +105,7 @@ class SimpleApp(server.App):
                  "id": "button1"},
 
                 {"type": "button",
-                 "label": "stupid button",
+                 "label": "some button",
                  "id": "button2"
 
                  }]
@@ -118,7 +116,6 @@ class SimpleApp(server.App):
 
         year = params['year']
         pr = params['province']
-        # lab2\data\province-1.csv
         # D:\python_data_science\lab2\data\province-1.csv
         path = os.path.normpath(f"lab2/data/province-{pr}.csv")
         min_week = params['min_week']
@@ -173,17 +170,12 @@ class SimpleApp(server.App):
         else:
             
             return sns.lineplot(x='Week', y=params['choose_by'], data=df).get_figure()
-        #result = df[f"{option}"]
-        # result[f"{option}"]=result[f"{option}"].astype(str)
-        #t = df.set_index(df['Week'])[f"{option}"]
-        #t.option = t.option.astype(str)
-        #data = self.getData(params)
+        
         
     def another(self,params):
       
         df = self.data(params,"1995")
         t = df.set_index("Week")
-        #re = t["VHI"]
         re = t.loc[:, ("VHI")]
         #rankings_pd.columns = ['TEST', 'ODI', 'T-20']
         #print(an)
@@ -194,9 +186,7 @@ class SimpleApp(server.App):
         re1 = t1.loc[:, ("VHI")]  # .rename(columns={"VHI": "2015"})
         result = pd.concat([re, re1], axis=1, sort=False)
         print(result)
-        #another_result = pd.DataFrame(
-           # columns=['week', 'vhi_1995', 'vhi_2015'])
-            #another_result.append('week':)
+        
         return sns.lineplot(data=result).get_figure()
     
 
