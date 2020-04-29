@@ -101,7 +101,17 @@ class SimpleApp(server.App):
         {'type': 'table',
             'id': 'vhi_by_year',
             'control_id': "button2",
-            'tab': 'VHI_by_year'}
+            'tab': 'VHI_by_year'},
+
+        {'type': 'plot',
+            'id': 'date_plot',
+            'control_id': "button2",
+            'tab': 'VHI_by_date'},
+
+        {'type': 'table',
+            'id': 'vhi_by_date',
+            'control_id': "button2",
+            'tab': 'VHI_by_date'}
     ]
 
     controls = [{"type": "button",
@@ -114,7 +124,7 @@ class SimpleApp(server.App):
 
                  }]
 
-    tabs = ['Table', 'Plot', 'VHI_by_year']
+    tabs = ['Table', 'Plot', 'VHI_by_year', "VHI_by_date"]
 
     def table1(self, params):
 
@@ -137,7 +147,7 @@ class SimpleApp(server.App):
         result.Year = result.Year.astype(int)
         return result
 
-    def data(self, params, year=None):
+    def data(self, params, year=None, flag=None):
         if not year:
             year = params['year']
 
@@ -151,7 +161,8 @@ class SimpleApp(server.App):
 
         df["Year"] = df["Year"].astype(int)
         # df["Week"] = df["week"].astype(int)
-        p = df[df["Year"] == int(year)]
+        if not flag:
+            p = df[df["Year"] == int(year)]
 
         result = p[(p.Week >= min_week) & (p.Week <= max_week)]
         # print(result)
@@ -179,6 +190,7 @@ class SimpleApp(server.App):
         df = self.data(params, "1995")
         t = df.set_index("Week")
         re = t.loc[:, ("VHI")]
+        re.rename("VHI_1995", inplace=True)
         #rankings_pd.columns = ['TEST', 'ODI', 'T-20']
         # print(an)
         # .rename(columns = {'test':'TEST', 'odi':'ODI','t20': 'T20'}, inplace = True)
@@ -186,11 +198,13 @@ class SimpleApp(server.App):
         # треш
         df1 = self.data(params, '2015')
         t1 = df1.set_index("Week")
-        re1 = t1.loc[:, ("VHI")] #.rename(columns={"VHI": "2015"},inplace=True)
-        re1.rename(columns={"VHI": "2015"}, inplace=True) 
+        # .rename(columns={"VHI": "2015"},inplace=True)
+        re1 = t1.loc[:, ("VHI")]
+        print(type(re1))
+        re1.rename("VHI_2015", inplace=True)
         # >>>File "d:/python_data_science/lab1_final/lab2/lab2.py", line 190, in vhi_by_year
         #re1.rename(columns={"VHI": "2015"}, inplace=True)
-        #TypeError: rename() got an unexpected keyword argument 'columns'
+        # TypeError: rename() got an unexpected keyword argument 'columns'
         print(re)
         print(re1)
         result = pd.concat([re, re1], axis=1, sort=False)
@@ -203,6 +217,20 @@ class SimpleApp(server.App):
         print(result1)
 
         return result1.plot()
+
+    def vhi_by_date(self, params):
+
+        df = self.data(params)
+        #df.drop(['Date'], axis=1, inplace=True)
+        dt = df['Year'].astype(str)+df['Week'].astype(str)+"1"
+        df['Date'] = pd.to_datetime(dt, format='%Y%W%w')
+
+        return df
+    def date_plot(self, params):
+        
+        df = self.vhi_by_date(params)
+        
+        return sns.lineplot(x='Date', y=params['choose_by'], data=df).get_figure()
 
 
 app = SimpleApp()
