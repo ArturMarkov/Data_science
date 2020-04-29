@@ -1,12 +1,12 @@
 
 
+from spyre import server
+import pandas as pd
 import os
+import matplotlib.pyplot as plt
 
 import seaborn as sns
 sns.set(style="whitegrid")
-
-import pandas as pd
-from spyre import server
 
 
 class SimpleApp(server.App):
@@ -92,13 +92,17 @@ class SimpleApp(server.App):
             'tab': 'Plot'
          },
         {'type': 'plot',
-            'id': 'another',
+            'id': 'vhi_plot',
             'control_id': "button2",
-            'tab': 'Another'
+            'tab': 'VHI_by_year'
 
 
-         }
-         ]
+         },
+        {'type': 'table',
+            'id': 'vhi_by_year',
+            'control_id': "button2",
+            'tab': 'VHI_by_year'}
+    ]
 
     controls = [{"type": "button",
                  "label": "show data",
@@ -110,9 +114,9 @@ class SimpleApp(server.App):
 
                  }]
 
-    tabs = ['Table', 'Plot','Another']
+    tabs = ['Table', 'Plot', 'VHI_by_year']
 
-    def getData(self, params):
+    def table1(self, params):
 
         year = params['year']
         pr = params['province']
@@ -122,20 +126,21 @@ class SimpleApp(server.App):
         max_week = params['max_week']
         df = pd.read_csv(path, header=0)
 
-
         df["Year"] = df["Year"].astype(str)
         # df["Week"] = df["week"].astype(int)
         p = df[df["Year"] == year]
 
         result = p[(p.Week >= min_week) & (p.Week <= max_week)]
-        #print(result)
+        # print(result)
 
         print(type(year))
         result.Year = result.Year.astype(int)
         return result
 
-    def data(self,params, year):
-        
+    def data(self, params, year=None):
+        if not year:
+            year = params['year']
+
         pr = params['province']
         # lab2\data\province-1.csv
         # D:\python_data_science\lab2\data\province-1.csv
@@ -144,51 +149,60 @@ class SimpleApp(server.App):
         max_week = params['max_week']
         df = pd.read_csv(path, header=0)
 
-
-        df["Year"] = df["Year"].astype(str)
+        df["Year"] = df["Year"].astype(int)
         # df["Week"] = df["week"].astype(int)
-        p = df[df["Year"] == year]
+        p = df[df["Year"] == int(year)]
 
         result = p[(p.Week >= min_week) & (p.Week <= max_week)]
-        #print(result)
+        # print(result)
 
         print(type(year))
-        result.Year = result.Year.astype(int)
+        #result.Year = result.Year.astype(int)
         return result
 
     def plot1(self, params):
-        df = self.getData(params)
+        df = self.data(params)
         option = params['choose_by']
-        #print(option)
+        # print(option)
         # df[option] = df[option].astype(str)
-        #print(type(option))
+        # print(type(option))
         if str(option) == 'all':
             t = df.set_index("Week")
             #re = t[["VHI", "TCI", "VCI"]]
-            re=t.loc[:, ("VHI", "TCI", "VCI")]
+            re = t.loc[:, ("VHI", "TCI", "VCI")]
             return sns.lineplot(data=re).get_figure()
         else:
-            
+
             return sns.lineplot(x='Week', y=params['choose_by'], data=df).get_figure()
-        
-        
-    def another(self,params):
-      
-        df = self.data(params,"1995")
+
+    def vhi_by_year(self, params):
+        df = self.data(params, "1995")
         t = df.set_index("Week")
         re = t.loc[:, ("VHI")]
         #rankings_pd.columns = ['TEST', 'ODI', 'T-20']
-        #print(an)
-        #.rename(columns = {'test':'TEST', 'odi':'ODI','t20': 'T20'}, inplace = True)
-        
-        df1 = self.data(params,'2015')
+        # print(an)
+        # .rename(columns = {'test':'TEST', 'odi':'ODI','t20': 'T20'}, inplace = True)
+
+        # треш
+        df1 = self.data(params, '2015')
         t1 = df1.set_index("Week")
-        re1 = t1.loc[:, ("VHI")]  # .rename(columns={"VHI": "2015"})
+        re1 = t1.loc[:, ("VHI")] #.rename(columns={"VHI": "2015"},inplace=True)
+        re1.rename(columns={"VHI": "2015"}, inplace=True) 
+        # >>>File "d:/python_data_science/lab1_final/lab2/lab2.py", line 190, in vhi_by_year
+        #re1.rename(columns={"VHI": "2015"}, inplace=True)
+        #TypeError: rename() got an unexpected keyword argument 'columns'
+        print(re)
+        print(re1)
         result = pd.concat([re, re1], axis=1, sort=False)
-        print(result)
-        
-        return sns.lineplot(data=result).get_figure()
-    
+        return result
+
+    def vhi_plot(self, params):
+
+        result1 = self.vhi_by_year(params)
+
+        print(result1)
+
+        return result1.plot()
 
 
 app = SimpleApp()
